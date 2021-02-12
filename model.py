@@ -3,6 +3,7 @@ import torch
 import segmentation_models_pytorch as smp
 import pytorch_lightning as pl
 from dice_loss import DiceLoss
+import numpy as np
 from ray.tune.integration.pytorch_lightning import TuneReportCallback
 
 
@@ -19,6 +20,23 @@ class diceLoss(nn.Module):
         B_sum = torch.sum(tflat * tflat)
         return 1 - ((2. * intersection + smooth) / (A_sum + B_sum + smooth))
 
+class IOU(nn.Module):
+    def init(self):
+        super(IOU, self).init()
+
+    def forward(self, pred, target):
+        iousum = 0
+        for i in range(target.shape[0]):
+            target_arr = target[i, :, :, :].clone().detach().cpu().numpy().argmax(0)
+            predicted_arr = pred[i, :, :, :].clone().detach().cpu().numpy().argmax(0)
+            intersection = np.logical_and(target_arr, predicted_arr).sum()
+            union = np.logical_or(target_arr, predicted_arr).sum()
+            iou_score = intersection / union if union else 0
+            iousum += iou_score
+
+        miou = iousum / target.shape[0]
+        return miou
+
 
 class LesionModel(pl.LightningModule):
     def __init__(self, config):
@@ -33,6 +51,7 @@ class LesionModel(pl.LightningModule):
         self.model_cfg = config
         self.loss_function = DiceLoss()
         self.save_hyperparameters()
+        self.iou_function = IOU()
 
     def forward(self, x):
         out = self.model(x)
@@ -42,8 +61,10 @@ class LesionModel(pl.LightningModule):
         x, y = batch['image'], batch['mask']
         y_pred = self(x)
         loss_val = self.loss_function(y_pred, y)
+        iou_val = self.iou_function(y_pred, y)
 
         self.log('train_loss', loss_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('IOU_loss', iou_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
         return loss_val
 
@@ -51,7 +72,9 @@ class LesionModel(pl.LightningModule):
         x, y = batch['image'], batch['mask']
         y_pred = self(x)
         loss_val = self.loss_function(y_pred, y)
+        iou_val = self.iou_function(y_pred, y)
         self.log('val_loss', loss_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('IOU_loss', iou_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
         return {"val_loss": loss_val}
 

@@ -5,6 +5,7 @@ from model import LesionModel
 from LesionDataModule import LesionDataModule
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 # set flags / seeds
 torch.backends.cudnn.benchmark = True
@@ -26,12 +27,28 @@ if __name__ == '__main__':
         'encoder_weights': 'imagenet',
         'lr': 1e-3,
     }
+
+    #https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html
+    checkpoint_callback = ModelCheckpoint(
+        filepath=r'C:\Users\gal\Documents\Gal\University\Shitut\Project\models\weights',
+        verbose=True,
+        monitor='val_loss',
+        mode='min' ## for val_loss this should be min
+    )
     logger = TensorBoardLogger('tb_logs', name='my_model')
 
     model = LesionModel(config)
     data_module = LesionDataModule(config)
-
-    trainer = pl.Trainer(gpus=1, max_epochs=300, progress_bar_refresh_rate=20, automatic_optimization=True,logger=logger)
+    # Load_model = 1 ## TODO: Make this work
+    # if Load_model:
+    #     checkpoint = torch.load(r'C:\Users\gal\Documents\Gal\University\Shitut\Project\models\weights.ckpt',
+    #                             map_location=lambda storage, loc: storage)
+    #     exp = Experiment(model)
+    #     exp.load_state_dict(checkpoint['state_dict'])
+    #     trainer = pl.Trainer(experiment=exp)
+    # else:
+    trainer = pl.Trainer(gpus=1, max_epochs=300, progress_bar_refresh_rate=20, automatic_optimization=True,
+                             logger=logger, checkpoint_callback=checkpoint_callback)
     trainer.fit(model, data_module)
 
 
