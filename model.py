@@ -27,10 +27,10 @@ class IOU(nn.Module):
     def forward(self, pred, target):
         iousum = 0
         for i in range(target.shape[0]):
-            target_arr = target[i, :, :, :].clone().detach().cpu().numpy().argmax(0)==0
-            predicted_arr = pred[i, :, :, :].clone().detach().cpu().numpy().argmax(0)==0
-            intersection = np.logical_and(target_arr, predicted_arr).sum()
-            union = np.logical_or(target_arr, predicted_arr).sum()
+            target_arr = target[i, :, :, :].clone().argmax(0)==0
+            predicted_arr = pred[i, :, :, :].clone().argmax(0)==0
+            intersection = torch.logical_and(target_arr, predicted_arr).sum()
+            union = torch.logical_or(target_arr, predicted_arr).sum()
             iou_score = intersection / union if union else 0
             iousum += iou_score
 
@@ -81,7 +81,7 @@ class LesionModel(pl.LightningModule):
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack(
             [x["val_loss"] for x in outputs]).mean()
-        avg_iou = np.stack(
+        avg_iou = torch.stack(
             [x["val_iou"] for x in outputs]).mean()
         self.log("ptl/val_loss", avg_loss)
         self.log("ptl/val_iou", avg_iou)

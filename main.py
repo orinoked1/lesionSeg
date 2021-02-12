@@ -30,10 +30,11 @@ if __name__ == '__main__':
 
     #https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html
     checkpoint_callback = ModelCheckpoint(
-        filepath=r'C:\Users\gal\Documents\Gal\University\Shitut\Project\models\weights',
         verbose=True,
         monitor='val_loss',
-        mode='min' ## for val_loss this should be min
+        mode='min', ## for val_loss this should be min
+        dirpath='cpp_path/',
+        filename='lesion-{epoch:02d}-{val_loss:.2f}'
     )
     logger = TensorBoardLogger('tb_logs', name='my_model')
 
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     #     trainer = pl.Trainer(experiment=exp)
     # else:
     trainer = pl.Trainer(gpus=1, max_epochs=300, progress_bar_refresh_rate=20, automatic_optimization=True,
-                             logger=logger, checkpoint_callback=checkpoint_callback)
+                             logger=logger, checkpoint_callback=[checkpoint_callback])
     trainer.fit(model, data_module)
 
 
