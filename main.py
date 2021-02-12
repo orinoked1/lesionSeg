@@ -30,6 +30,7 @@ if __name__ == '__main__':
         'encoder_name': 'resnet18',
         'encoder_weights': 'imagenet',
         'lr': 1e-3,
+        'weight_decay':1e-4,
     }
 
     #https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html

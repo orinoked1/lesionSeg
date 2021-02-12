@@ -96,7 +96,7 @@ class LesionModel(pl.LightningModule):
         self.log("ptl/val_iou", avg_iou)
 
     def configure_optimizers(self):
-        opt = torch.optim.Adam(self.model.parameters(), lr=self.model_cfg["lr"])
+        opt = torch.optim.Adam(self.model.parameters(), lr=self.model_cfg["lr"],weight_decay=self.model_cfg["weight_decay"])
         sch = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, factor=0.5, verbose=True)
         mon = 'val_loss'
         return {

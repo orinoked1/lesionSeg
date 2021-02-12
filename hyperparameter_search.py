@@ -39,10 +39,10 @@ gpus_per_trial = 1 # set this to higher if using GPU
 
 
 config = {
-    'aug_degrees': (-10, 10),
+    'aug_degrees': tune.choice([(0, 0),(-10, 10)]),
     'shear_range': (0, 0,0, 0),
-    'horizontal_flip_p': 0.5,
-    'vertical_flip_p': 0.5,
+    'horizontal_flip_p': tune.choice([0,0.3]),
+    'vertical_flip_p': tune.choice([0,0.3]),
     'root_dir': r'D:\downloads\neuralNetwork',
     'csv_file': 'labels_lesion.csv',
     'batch_size':  tune.choice([8,16]),
@@ -50,6 +50,7 @@ config = {
     'encoder_name': tune.choice(['resnet18','resnet50']),
     'encoder_weights': 'imagenet',
     'lr': tune.loguniform(1e-4, 1e-2),
+    'weight_decay': tune.loguniform(1e-6, 1e-3),
 }
 
 trainable = tune.with_parameters(
