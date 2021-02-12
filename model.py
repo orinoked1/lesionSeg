@@ -4,6 +4,7 @@ import segmentation_models_pytorch as smp
 import pytorch_lightning as pl
 from dice_loss import DiceLoss
 import numpy as np
+from ray.tune.integration.pytorch_lightning import TuneReportCallback
 
 
 class diceLoss(nn.Module):
@@ -38,16 +39,16 @@ class IOU(nn.Module):
 
 
 class LesionModel(pl.LightningModule):
-    def __init__(self, model_cfg,data_cfg):
+    def __init__(self, config):
         super(LesionModel, self).__init__()
         self.model = smp.Unet(
-            encoder_name=model_cfg["encoder_name"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-            encoder_weights=model_cfg["encoder_weights"],
+            encoder_name=config["encoder_name"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+            encoder_weights=config["encoder_weights"],
             # use `imagenet` pre-trained weights for encoder initialization
             in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
             classes=2,  # model output channels (number of classes in your dataset)
         )
-        self.model_cfg = model_cfg
+        self.model_cfg = config
         self.loss_function = DiceLoss()
         self.save_hyperparameters()
         self.iou_function = IOU()
@@ -75,7 +76,12 @@ class LesionModel(pl.LightningModule):
         self.log('val_loss', loss_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         self.log('IOU_loss', iou_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
-        return loss_val
+        return {"val_loss": loss_val}
+
+    def validation_epoch_end(self, outputs):
+        avg_loss = torch.stack(
+            [x["val_loss"] for x in outputs]).mean()
+        self.log("ptl/val_loss", avg_loss)
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.model_cfg["lr"])
