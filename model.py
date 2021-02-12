@@ -41,13 +41,22 @@ class IOU(nn.Module):
 class LesionModel(pl.LightningModule):
     def __init__(self, config):
         super(LesionModel, self).__init__()
-        self.model = smp.Unet(
-            encoder_name=config["encoder_name"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-            encoder_weights=config["encoder_weights"],
-            # use `imagenet` pre-trained weights for encoder initialization
-            in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-            classes=2,  # model output channels (number of classes in your dataset)
-        )
+        if config["Architecture"]=="unet":
+            self.model = smp.Unet(
+                encoder_name=config["encoder_name"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+                encoder_weights=config["encoder_weights"],
+                # use `imagenet` pre-trained weights for encoder initialization
+                in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+                classes=2,  # model output channels (number of classes in your dataset)
+            )
+        elif config["Architecture"]=="DeepLabV3Plus":
+            self.model = smp.DeepLabV3Plus(
+                encoder_name=config["encoder_name"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+                encoder_weights=config["encoder_weights"],
+                # use `imagenet` pre-trained weights for encoder initialization
+                in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+                classes=2,  # model output channels (number of classes in your dataset)
+            )
         self.model_cfg = config
         self.loss_function = DiceLoss()
         self.save_hyperparameters()

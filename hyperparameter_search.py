@@ -46,6 +46,7 @@ config = {
     'root_dir': r'D:\downloads\neuralNetwork',
     'csv_file': 'labels_lesion.csv',
     'batch_size':  tune.choice([8,16]),
+    'Architecture': tune.choice(["unet"]),
     'encoder_name': tune.choice(['resnet18','resnet50']),
     'encoder_weights': 'imagenet',
     'lr': tune.loguniform(1e-4, 1e-2),
