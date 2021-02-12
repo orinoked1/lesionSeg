@@ -27,8 +27,8 @@ class IOU(nn.Module):
     def forward(self, pred, target):
         iousum = 0
         for i in range(target.shape[0]):
-            target_arr = target[i, :, :, :].clone().detach().cpu().numpy().argmax(0)
-            predicted_arr = pred[i, :, :, :].clone().detach().cpu().numpy().argmax(0)
+            target_arr = target[i, :, :, :].clone().detach().cpu().numpy().argmax(0)==0
+            predicted_arr = pred[i, :, :, :].clone().detach().cpu().numpy().argmax(0)==0
             intersection = np.logical_and(target_arr, predicted_arr).sum()
             union = np.logical_or(target_arr, predicted_arr).sum()
             iou_score = intersection / union if union else 0
@@ -76,12 +76,15 @@ class LesionModel(pl.LightningModule):
         self.log('val_loss', loss_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         self.log('IOU_loss', iou_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
-        return {"val_loss": loss_val}
+        return {"val_loss": loss_val,"val_iou": iou_val}
 
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack(
             [x["val_loss"] for x in outputs]).mean()
+        avg_iou = np.stack(
+            [x["val_iou"] for x in outputs]).mean()
         self.log("ptl/val_loss", avg_loss)
+        self.log("ptl/val_iou", avg_iou)
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.model.parameters(), lr=self.model_cfg["lr"])
