@@ -16,13 +16,12 @@ def bb2mask(bb_boxes, out_size):
     # out_size the mask's out size
     # out:
     # img_mask - size of [out_size,2] first chan is lesion 2nd is back
-    img_mask = np.zeros([*out_size, 2],dtype='uint8')
+    img_mask = np.zeros([*out_size, 1],dtype='uint8')
     for i in range(len(bb_boxes)):
         bb_box_i = [bb_boxes.iloc[i]['xmin'], bb_boxes.iloc[i]['ymin'],
                     bb_boxes.iloc[i]['xmax'], bb_boxes.iloc[i]['ymax']]
         img_mask[int(bb_box_i[1]):int(bb_box_i[3]), int(bb_box_i[0]):int(bb_box_i[2]), 0] = 1.
-    img_mask[:, :, 1] = 1 - img_mask[:, :, 0]
-    return img_mask
+    return img_mask*255
 
 
 class LesionSegDataSet(data.Dataset):
@@ -64,8 +63,8 @@ class LesionSegDataSet(data.Dataset):
         if self.transform:
             image = self.transform(image)
             mask = self.transform(mask)
-        if self.out_chan == 1:
-            mask = mask[0, :, :].view(1, *self.out_size)
+        if self.out_chan == 2:
+            mask = torch.cat((1-mask,mask),0)
 
         sample = {'image': image, 'mask': mask}
 
