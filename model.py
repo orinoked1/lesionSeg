@@ -7,19 +7,6 @@ import numpy as np
 from ray.tune.integration.pytorch_lightning import TuneReportCallback
 
 
-class diceLoss(nn.Module):
-    def init(self):
-        super(diceLoss, self).init()
-
-    def forward(self, pred, target):
-        smooth = 1.
-        iflat = pred.contiguous().view(-1)
-        tflat = target.contiguous().view(-1)
-        intersection = (iflat * tflat).sum()
-        A_sum = torch.sum(iflat * iflat)
-        B_sum = torch.sum(tflat * tflat)
-        return 1 - ((2. * intersection + smooth) / (A_sum + B_sum + smooth))
-
 class IOU(nn.Module):
     def init(self):
         super(IOU, self).init()
@@ -27,8 +14,12 @@ class IOU(nn.Module):
     def forward(self, pred, target):
         iousum = 0
         for i in range(target.shape[0]):
-            target_arr = target[i, :, :, :].clone().argmax(0)==0
-            predicted_arr = pred[i, :, :, :].clone().argmax(0)==0
+            if target.shape[1]==2:
+                target_arr = target[i, :, :, :].clone().argmax(0)==0
+                predicted_arr = pred[i, :, :, :].clone().argmax(0)==0
+            else:
+                predicted_arr = torch.sigmoid(pred[i, :, :, :].clone())>0.5
+                target_arr = target[i, :, :, :].clone()>0
             intersection = torch.logical_and(target_arr, predicted_arr).sum()
             union = torch.logical_or(target_arr, predicted_arr).sum()
             iou_score = intersection / union if union else 0
@@ -41,21 +32,21 @@ class IOU(nn.Module):
 class LesionModel(pl.LightningModule):
     def __init__(self, config):
         super(LesionModel, self).__init__()
-        if config["Architecture"]=="unet":
+        if config["A"]=="unet":
             self.model = smp.Unet(
-                encoder_name=config["encoder_name"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+                encoder_name=config["EN"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
                 encoder_weights=config["encoder_weights"],
                 # use `imagenet` pre-trained weights for encoder initialization
                 in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-                classes=2,  # model output channels (number of classes in your dataset)
+                classes=config["OC"],  # model output channels (number of classes in your dataset)
             )
-        elif config["Architecture"]=="DeepLabV3Plus":
+        elif config["A"]=="DeepLabV3Plus":
             self.model = smp.DeepLabV3Plus(
-                encoder_name=config["encoder_name"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+                encoder_name=config["EN"],  # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
                 encoder_weights=config["encoder_weights"],
                 # use `imagenet` pre-trained weights for encoder initialization
                 in_channels=3,  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-                classes=2,  # model output channels (number of classes in your dataset)
+                classes=config["OC"],  # model output channels (number of classes in your dataset)
             )
         self.model_cfg = config
         self.loss_function = DiceLoss()
@@ -96,7 +87,7 @@ class LesionModel(pl.LightningModule):
         self.log("ptl/val_iou", avg_iou)
 
     def configure_optimizers(self):
-        opt = torch.optim.Adam(self.model.parameters(), lr=self.model_cfg["lr"],weight_decay=self.model_cfg["weight_decay"])
+        opt = torch.optim.Adam(self.model.parameters(), lr=self.model_cfg["LR"],weight_decay=self.model_cfg["WD"])
         sch = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, factor=0.5, verbose=True)
         mon = 'val_loss'
         return {

@@ -7,6 +7,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from ray.tune.integration.pytorch_lightning import TuneReportCallback
 from pytorch_lightning.callbacks import ModelCheckpoint
+from datetime import datetime
 
 
 def train_lesion(config, data_dir=None, num_epochs=10, num_gpus=1):
@@ -39,18 +40,18 @@ gpus_per_trial = 1 # set this to higher if using GPU
 
 
 config = {
-    'aug_degrees': tune.choice([(0, 0),(-10, 10)]),
-    'shear_range': (0, 0,0, 0),
-    'horizontal_flip_p': tune.choice([0,0.3]),
-    'vertical_flip_p': tune.choice([0,0.3]),
+    'AD': tune.choice([(0,0),(-10,10)]),
+    'HF': tune.choice([0,0.3]),
+    'VF': tune.choice([0,0.3]),
     'root_dir': r'D:\downloads\neuralNetwork',
     'csv_file': 'labels_lesion.csv',
-    'batch_size':  tune.choice([8,16]),
-    'Architecture': tune.choice(["unet"]),
-    'encoder_name': tune.choice(['resnet18','resnet50']),
+    'BS':  tune.choice([8,16,32]),
+    'A': "unet",
+    'EN': tune.choice(["xception","densenet169"]),
     'encoder_weights': 'imagenet',
-    'lr': tune.loguniform(1e-4, 1e-2),
-    'weight_decay': tune.loguniform(1e-6, 1e-3),
+    'LR': tune.loguniform(5e-4, 5e-3),
+    'WD': 1e-5,
+    'OC': tune.choice([1,2]),
 }
 
 trainable = tune.with_parameters(
@@ -60,17 +61,22 @@ trainable = tune.with_parameters(
     num_gpus=gpus_per_trial
 )
 
+def trial_str_creator(trial):
+    return "{}".format(trial.trial_id)
+
 analysis = tune.run(
     trainable,
     resources_per_trial={
-        "cpu": 1,
+        "cpu": 4,
         "gpu": gpus_per_trial
     },
     metric="iou",
     mode="max",
     config=config,
     num_samples=num_samples,
-    name="tune_lesions")
+    name="tune_lesions",
+    local_dir=r"D:\ray",
+    trial_name_creator=trial_str_creator,)
 
 print(analysis.best_config)
 a=1

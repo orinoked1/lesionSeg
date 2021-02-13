@@ -20,17 +20,18 @@ PATH_TO_CHECKPOINT = r'C:\Users\gal\Documents\Gal\University\Shitut\Project\mode
 # Start with main code
 if __name__ == '__main__':
     config = {
-        'aug_degrees': (-10, 10),
-        'shear_range': (0,0.3,0,0.3),
-        'horizontal_flip_p': 0.5,
-        'vertical_flip_p': 0.5,
+        'AD':  (-10, 10),
+        'HF':  0.3,
+        'VF':  0.3,
         'root_dir': PATH_TO_IMAGES,
-        'csv_file': 'labels_lesion.csv',
-        'batch_size': 8,
-        'encoder_name': 'resnet18',
+        'csv_file': "labels_lesion.csv",
+        'BS': 16,
+        'A': "unet",
+        'EN': "xception",
         'encoder_weights': 'imagenet',
-        'lr': 1e-3,
-        'weight_decay':1e-4,
+        'LR': 2e-2,
+        'WD': 1e-5,
+        'OC': 1,
     }
 
     #https://pytorch-lightning.readthedocs.io/en/stable/generated/pytorch_lightning.callbacks.ModelCheckpoint.html

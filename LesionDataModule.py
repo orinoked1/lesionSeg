@@ -13,9 +13,9 @@ class LesionDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         # see more aug in https://pytorch.org/docs/stable/torchvision/transforms.html
         aug_trans = transforms.Compose([
-            transforms.RandomRotation(degrees=self.data_cfg['aug_degrees']),
-            transforms.RandomHorizontalFlip(p=self.data_cfg['horizontal_flip_p']),
-            transforms.RandomVerticalFlip(p=self.data_cfg['vertical_flip_p']),
+            transforms.RandomRotation(degrees=self.data_cfg['AD']),
+            transforms.RandomHorizontalFlip(p=self.data_cfg['HF']),
+            transforms.RandomVerticalFlip(p=self.data_cfg['VF']),
 
         ])
         self.train_transform = transforms.Compose([
@@ -26,17 +26,17 @@ class LesionDataModule(pl.LightningDataModule):
             transforms.ToTensor(),
         ])
         self.lesion_dataset_train = LesionSegDataSet(self.data_cfg['root_dir'], self.data_cfg['csv_file'], data_set='train',
-                                                     transform=self.train_transform)
+                                                     transform=self.train_transform,out_chan=self.data_cfg['OC'])
         self.lesion_dataset_validation = LesionSegDataSet(self.data_cfg['root_dir'], self.data_cfg['csv_file'],
-                                                          data_set='validation', transform=self.val_transform)
+                                                          data_set='validation', transform=self.val_transform,out_chan=self.data_cfg['OC'])
         self.lesion_dataset_test = LesionSegDataSet(self.data_cfg['root_dir'], self.data_cfg['csv_file'], data_set='test',
-                                                    transform=self.val_transform)
+                                                    transform=self.val_transform,out_chan=self.data_cfg['OC'] )
 
     def train_dataloader(self):
-        return data.DataLoader(self.lesion_dataset_train, batch_size=self.data_cfg['batch_size'])
+        return data.DataLoader(self.lesion_dataset_train, batch_size=self.data_cfg['BS'])
 
     def val_dataloader(self):
-        return data.DataLoader(self.lesion_dataset_validation, batch_size=self.data_cfg['batch_size'])
+        return data.DataLoader(self.lesion_dataset_validation, batch_size=self.data_cfg['BS'])
 
     def test_dataloader(self):
-        return data.DataLoader(self.lesion_dataset_test, batch_size=self.data_cfg['batch_size'])
+        return data.DataLoader(self.lesion_dataset_test, batch_size=self.data_cfg['BS'])

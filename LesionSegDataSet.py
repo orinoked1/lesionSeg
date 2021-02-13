@@ -27,13 +27,14 @@ def bb2mask(bb_boxes, out_size):
 
 class LesionSegDataSet(data.Dataset):
 
-    def __init__(self, root_dir, csv_file, data_set=None, transform=None):
+    def __init__(self, root_dir, csv_file, data_set=None, transform=None,out_chan=2):
         df_files = pd.read_csv(os.path.join(root_dir, csv_file), header=0, index_col='index')
         if not (data_set is None):
             df_files = df_files[df_files['set'] == data_set]
         self.landmarks_frame = df_files
         self.root_dir = root_dir
         self.transform = transform
+        self.out_chan = out_chan
         self.out_size = (int(224), int(224))
         self.ind_array = self.landmarks_frame.index.unique()
 
@@ -60,10 +61,11 @@ class LesionSegDataSet(data.Dataset):
         bb_boxes['ymax'] = np.round(bb_boxes['ymax'] / orig_img_size[0] * self.out_size[0])
         bb_boxes['Area'] = (bb_boxes['xmax'] - bb_boxes['xmin']) * (bb_boxes['ymax'] - bb_boxes['ymin'])
         mask = bb2mask(bb_boxes, self.out_size)
-
         if self.transform:
             image = self.transform(image)
             mask = self.transform(mask)
+        if self.out_chan == 1:
+            mask = mask[0, :, :].view(1, *self.out_size)
 
         sample = {'image': image, 'mask': mask}
 
