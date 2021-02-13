@@ -39,4 +39,4 @@ class LesionDataModule(pl.LightningDataModule):
         return data.DataLoader(self.lesion_dataset_validation, batch_size=self.data_cfg['BS'])
 
     def test_dataloader(self):
-        return data.DataLoader(self.lesion_dataset_test, batch_size=self.data_cfg['BS'])
+        return data.DataLoader(self.lesion_dataset_test, batch_size=1)

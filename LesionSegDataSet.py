@@ -66,7 +66,7 @@ class LesionSegDataSet(data.Dataset):
         if self.out_chan == 2:
             mask = torch.cat((1-mask,mask),0)
 
-        sample = {'image': image, 'mask': mask}
+        sample = {'image': image, 'mask': mask, 'image_name':os.path.basename(img_name)}
 
 
 
