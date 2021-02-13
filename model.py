@@ -96,9 +96,9 @@ class LesionModel(pl.LightningModule):
         else:
             gt_mask = (y[0, 0, :, :] > y[0, 1, :, :]).detach().cpu().numpy()
             out_mask = (y_pred[0, 0, :, :] > y_pred[0, 1, :, :]).detach().cpu().numpy()
-        out_img = color.label2rgb(out_mask, in_image, bg_label=0)
+        out_img = color.label2rgb(out_mask, in_image, bg_label=0,colors=[(0,0,1)])
         out_img[out_mask == False] = in_image[out_mask == False]
-        gt_img = color.label2rgb(gt_mask, in_image, bg_label=0)
+        gt_img = color.label2rgb(gt_mask, in_image, bg_label=0,colors=[(0,0,1)])
         gt_img[gt_mask == False] = in_image[gt_mask == False]
         fig = plt.figure(figsize=(10, 3))
         plt.subplot(131)
