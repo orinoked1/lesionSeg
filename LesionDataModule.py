@@ -9,13 +9,25 @@ class LesionDataModule(pl.LightningDataModule):
     def __init__(self, data_cfg):
         super().__init__()
         self.data_cfg = data_cfg
+        if self.data_cfg['AP']==1:
+            self.AD=(0,0)
+            self.HF = 0
+            self.VF = 0
+        elif self.data_cfg['AP']==2:
+            self.AD=(-10,10)
+            self.HF = 0.3
+            self.VF = 0.3
+        elif self.data_cfg['AP'] == 3:
+            self.AD=(-20,20)
+            self.HF = 0.5
+            self.VF = 0.5
 
     def setup(self, stage=None):
         # see more aug in https://pytorch.org/docs/stable/torchvision/transforms.html
         aug_trans = transforms.Compose([
-            transforms.RandomRotation(degrees=self.data_cfg['AD']),
-            transforms.RandomHorizontalFlip(p=self.data_cfg['HF']),
-            transforms.RandomVerticalFlip(p=self.data_cfg['VF']),
+            transforms.RandomRotation(degrees=self.AD),
+            transforms.RandomHorizontalFlip(p=self.HF),
+            transforms.RandomVerticalFlip(p=self.VF),
 
         ])
         self.train_transform = transforms.Compose([

@@ -1,13 +1,10 @@
-import tempfile
 from ray import tune
-import os
 from model import LesionModel
 from LesionDataModule import LesionDataModule
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from ray.tune.integration.pytorch_lightning import TuneReportCallback
 from pytorch_lightning.callbacks import ModelCheckpoint
-from datetime import datetime
 
 
 def train_lesion(config, data_dir=None, num_epochs=10, num_gpus=1):
@@ -34,24 +31,22 @@ def train_lesion(config, data_dir=None, num_epochs=10, num_gpus=1):
     trainer.fit(model, data_module)
 
 
-num_samples = 30
-num_epochs = 100
+num_samples = 300
+num_epochs = 200
 gpus_per_trial = 1 # set this to higher if using GPU
 
 
 config = {
-    'AD': tune.choice([(0,0),(-10,10)]),
-    'HF': tune.choice([0,0.3]),
-    'VF': tune.choice([0,0.3]),
-    'root_dir': r'D:\downloads\neuralNetwork',
-    'csv_file': 'labels_lesion.csv',
-    'BS':  tune.choice([8,16,32]),
-    'A': "unet",
-    'EN': tune.choice(["xception","densenet169"]),
-    'encoder_weights': 'imagenet',
-    'LR': tune.loguniform(5e-4, 5e-3),
-    'WD': 1e-5,
-    'OC': tune.choice([1,2]),
+    'AP': tune.grid_search([1, 2, 3]),              # augmentation profile 1=none 2=mid 3=high
+    'root_dir': r'D:\downloads\neuralNetwork',      # data path
+    'csv_file': 'labels_lesion.csv',                # marking table
+    'BS':  8,                                       # 3 batch size
+    'A': "unet",                                    # architecture (unet\deeplabv3++)
+    'EN': tune.grid_search(["xception","densenet161","resnet50"]), # encoder see segmentation_models_pytorch for options
+    'encoder_weights': 'imagenet',                  # pre trained weights see segmentation_models_pytorch
+    'LR': 3e-4,                                     # learn rate
+    'WD': 1e-5,                                     # weight decay
+    'OC': 2,                                        # output channels 1=no background channel, 2=with background channel
 }
 
 trainable = tune.with_parameters(
@@ -79,4 +74,3 @@ analysis = tune.run(
     trial_name_creator=trial_str_creator,)
 
 print(analysis.best_config)
-a=1
