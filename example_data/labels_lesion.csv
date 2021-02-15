@@ -1,0 +1,12 @@
+index,xmin,xmax,ymin,ymax,Image,Label,File_Path,set
+0,117,181,56,104,BC_1.jpg,Lesion,Data Images/Buccal Mucosa/Cheek/BC_1.jpg,train
+1,47,91,47,98,BC_2.PNG,Lesion,Data Images/Buccal Mucosa/Cheek/BC_2.PNG,train
+2,288,374,231,309,BC_24.PNG,Lesion,Data Images/Buccal Mucosa/Cheek/BC_24.PNG,train
+3,158,311,186,353,BC_36.png,Lesion,Data Images/Buccal Mucosa/Cheek/BC_36.png,test
+4,59,187,24,155,BC_37.PNG,Lesion,Data Images/Buccal Mucosa/Cheek/BC_37.PNG,train
+5,177,224,72,113,BC_38.PNG,Lesion,Data Images/Buccal Mucosa/Cheek/BC_38.PNG,train
+6,186,285,86,178,BC_39.PNG,Lesion,Data Images/Buccal Mucosa/Cheek/BC_39.PNG,train
+6,148,198,79,158,BC_39.PNG,Lesion,Data Images/Buccal Mucosa/Cheek/BC_39.PNG,train
+7,199,237,176,224,BC_4.jpg,Lesion,Data Images/Buccal Mucosa/Cheek/BC_4.jpg,test
+10,216,432,185,341,BC_42.png,Lesion,Data Images/Buccal Mucosa/Cheek/BC_42.png,validation
+12,149,207,107,175,BC_45.PNG,Lesion,Data Images/Buccal Mucosa/Cheek/BC_45.PNG,train
