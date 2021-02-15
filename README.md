@@ -7,7 +7,8 @@ the cod has 3 entry points:
 3. test_model.py - test (using the test set) a trained model.
 
 our best model can be found in google drive 
+(https://drive.google.com/drive/folders/1a9fqrHTBjPXav-N90iJDd90KdNZWN3i6?usp=sharing)
 
-example data can be found in data /exmple_data 
+example data can be found in /exmple_data 
 
 anaconda requirements can be found in /conda_env/environment.yml
