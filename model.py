@@ -19,8 +19,8 @@ class IOU(nn.Module):
         iousum = 0
         for i in range(target.shape[0]):
             if target.shape[1] == 2:
-                target_arr = target[i, :, :, :].clone().argmax(0) == 0
-                predicted_arr = pred[i, :, :, :].clone().argmax(0) == 0
+                target_arr = target[i, :, :, :].clone().argmax(0) == 1
+                predicted_arr = pred[i, :, :, :].clone().argmax(0) == 1
             else:
                 predicted_arr = torch.sigmoid(pred[i, :, :, :].clone()) > 0.5
                 target_arr = target[i, :, :, :].clone() > 0

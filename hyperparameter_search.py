@@ -31,8 +31,8 @@ def train_lesion(config, data_dir=None, num_epochs=10, num_gpus=1):
     trainer.fit(model, data_module)
 
 
-num_samples = 300
-num_epochs = 200
+num_samples = 9
+num_epochs = 100
 gpus_per_trial = 1 # set this to higher if using GPU
 
 
