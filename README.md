@@ -1,7 +1,7 @@
 # lesionSeg
 
-this project was designed to train and test a neural network for semantic segmentation of oral lesions.
-the cod has 3 entry points:
+This project was designed to train and test a neural network for semantic segmentation of oral lesions.
+The code has 3 entry points:
 1. trian_model.py - train a specific configuration model
 2. hyperparameters_serch.py - search best hyperparameters configuration (using ray[tune])
 3. test_model.py - test (using the test set) a trained model.
